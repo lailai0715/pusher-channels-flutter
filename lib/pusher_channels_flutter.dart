@@ -78,6 +78,7 @@ class PusherChannelsFlutter {
   Future<void> init({
     required String apiKey,
     required String cluster,
+    required int port,
     String? host,
     bool? useTLS,
     int? activityTimeout,
@@ -131,7 +132,8 @@ class PusherChannelsFlutter {
       "authTransport": authTransport,
       "authParams": authParams,
       "logToConsole": logToConsole,
-      "host": host
+      "host": host,
+      "port": port
     });
   }
 

@@ -31,10 +31,8 @@ class _MyAppState extends State<MyApp> {
     print("LOG: $text");
     setState(() {
       _log += text + "\n";
-      Timer(
-          const Duration(milliseconds: 100),
-          () => _listViewController
-              .jumpTo(_listViewController.position.maxScrollExtent));
+      Timer(const Duration(milliseconds: 100),
+          () => _listViewController.jumpTo(_listViewController.position.maxScrollExtent));
     });
   }
 
@@ -57,6 +55,7 @@ class _MyAppState extends State<MyApp> {
 
     try {
       await pusher.init(
+        port: 80,
         apiKey: _apiKey.text,
         cluster: _cluster.text,
         onConnectionStateChange: onConnectionStateChange,
@@ -112,11 +111,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   dynamic onAuthorizer(String channelName, String socketId, dynamic options) {
-    return {
-      "auth": "foo:bar",
-      "channel_data": '{"user_id": 1}',
-      "shared_secret": "foobar"
-    };
+    return {"auth": "foo:bar", "channel_data": '{"user_id": 1}', "shared_secret": "foobar"};
   }
 
   void onTriggerEventPressed() async {
@@ -128,10 +123,8 @@ class _MyAppState extends State<MyApp> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("eventName", _eventName.text);
     prefs.setString("data", _data.text);
-    pusher.trigger(PusherEvent(
-        channelName: _channelName.text,
-        eventName: _eventName.text,
-        data: _data.text));
+    pusher.trigger(
+        PusherEvent(channelName: _channelName.text, eventName: _eventName.text, data: _data.text));
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -177,8 +170,7 @@ class _MyAppState extends State<MyApp> {
                                 ? 'Please enter your API key.'
                                 : null;
                           },
-                          decoration:
-                              const InputDecoration(labelText: 'API Key'),
+                          decoration: const InputDecoration(labelText: 'API Key'),
                         ),
                         TextFormField(
                           controller: _cluster,
@@ -214,12 +206,10 @@ class _MyAppState extends State<MyApp> {
                       ListView.builder(
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: pusher
-                              .channels[_channelName.text]?.members.length,
+                          itemCount: pusher.channels[_channelName.text]?.members.length,
                           itemBuilder: (context, index) {
-                            final member = pusher
-                                .channels[_channelName.text]!.members
-                                .elementAt(index);
+                            final member =
+                                pusher.channels[_channelName.text]!.members.elementAt(index);
                             return ListTile(
                                 title: Text(member.userInfo.toString()),
                                 subtitle: Text(member.userId));
@@ -247,8 +237,7 @@ class _MyAppState extends State<MyApp> {
                       ),
                     ]),
                   ),
-                SingleChildScrollView(
-                    scrollDirection: Axis.vertical, child: Text(_log)),
+                SingleChildScrollView(scrollDirection: Axis.vertical, child: Text(_log)),
               ]),
         ),
       ),

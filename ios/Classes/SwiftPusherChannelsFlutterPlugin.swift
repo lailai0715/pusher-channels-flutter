@@ -55,17 +55,22 @@ public class SwiftPusherChannelsFlutterPlugin: NSObject, FlutterPlugin, PusherDe
                 useTLS = args["useTLS"] as! Bool
             }
             var port:Int
-            if useTLS {
-                port = 443
-                if args["wssPort"] is Int {
-                    port = args["wssPort"] as! Int
-                }
+            if args["port"] is Int {
+                port = args["port"] as! Int
             } else {
-                port = 80
-                if args["wsPort"] is Int {
-                    port = args["wsPort"] as! Int
+                if useTLS {
+                    port = 443
+                    if args["wssPort"] is Int {
+                        port = args["wssPort"] as! Int
+                    }
+                } else {
+                    port = 80
+                    if args["wsPort"] is Int {
+                        port = args["wsPort"] as! Int
+                    }
                 }
             }
+           
             var activityTimeout:TimeInterval? = nil
             if args["activityTimeout"] is TimeInterval {
                 activityTimeout = args["activityTimeout"] as! Double / 1000.0
