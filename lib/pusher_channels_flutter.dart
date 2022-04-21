@@ -8,11 +8,7 @@ class PusherEvent {
   String eventName;
   dynamic data;
   String? userId;
-  PusherEvent(
-      {required this.channelName,
-      required this.eventName,
-      this.data,
-      this.userId});
+  PusherEvent({required this.channelName, required this.eventName, this.data, this.userId});
   @override
   String toString() {
     return "{ channelName: $channelName, eventName: $eventName, data: $data, userId: $userId }";
@@ -47,8 +43,7 @@ class PusherChannel {
       this.me});
 
   Future<void> unsubscribe() async {
-    return PusherChannelsFlutter.getInstance()
-        .unsubscribe(channelName: channelName);
+    return PusherChannelsFlutter.getInstance().unsubscribe(channelName: channelName);
   }
 
   Future<void> trigger(PusherEvent event) async {
@@ -83,6 +78,7 @@ class PusherChannelsFlutter {
   Future<void> init({
     required String apiKey,
     required String cluster,
+    String? host,
     bool? useTLS,
     int? activityTimeout,
     int? pongTimeout,
@@ -97,8 +93,7 @@ class PusherChannelsFlutter {
     String? authTransport, // pusher-js only
     Map<String, Map<String, String>>? authParams, // pusher-js only
     bool? logToConsole, // pusher-js only
-    Function(String currentState, String previousState)?
-        onConnectionStateChange,
+    Function(String currentState, String previousState)? onConnectionStateChange,
     Function(String channelName, dynamic data)? onSubscriptionSucceeded,
     Function(String message, dynamic error)? onSubscriptionError,
     Function(String event, String reason)? onDecryptionFailure,
@@ -106,8 +101,7 @@ class PusherChannelsFlutter {
     Function(PusherEvent event)? onEvent,
     Function(String channelName, PusherMember member)? onMemberAdded,
     Function(String channelName, PusherMember member)? onMemberRemoved,
-    Function(String channelName, String socketId, dynamic options)?
-        onAuthorizer,
+    Function(String channelName, String socketId, dynamic options)? onAuthorizer,
   }) async {
     methodChannel.setMethodCallHandler(_platformCallHandler);
     this.onConnectionStateChange = onConnectionStateChange;
@@ -136,7 +130,8 @@ class PusherChannelsFlutter {
       "authEndpoint": authEndpoint,
       "authTransport": authTransport,
       "authParams": authParams,
-      "logToConsole": logToConsole
+      "logToConsole": logToConsole,
+      "host": host
     });
   }
 
@@ -149,13 +144,11 @@ class PusherChannelsFlutter {
     switch (call.method) {
       case 'onConnectionStateChange':
         connectionState = call.arguments['currentState'].toUpperCase();
-        onConnectionStateChange?.call(
-            call.arguments['currentState'].toUpperCase(),
+        onConnectionStateChange?.call(call.arguments['currentState'].toUpperCase(),
             call.arguments['previousState'].toUpperCase());
         return Future.value(null);
       case 'onError':
-        onError?.call(call.arguments['message'], call.arguments['code'],
-            call.arguments['error']);
+        onError?.call(call.arguments['message'], call.arguments['code'], call.arguments['error']);
         return Future.value(null);
       case 'onEvent':
         switch (eventName) {
@@ -184,12 +177,10 @@ class PusherChannelsFlutter {
         }
         return Future.value(null);
       case 'onSubscriptionError':
-        onSubscriptionError?.call(
-            call.arguments['message'], call.arguments['error']);
+        onSubscriptionError?.call(call.arguments['message'], call.arguments['error']);
         return Future.value(null);
       case 'onDecryptionFailure':
-        onDecryptionFailure?.call(
-            call.arguments['event'], call.arguments['reason']);
+        onDecryptionFailure?.call(call.arguments['event'], call.arguments['reason']);
         return Future.value(null);
       case 'onMemberAdded':
         var member = PusherMember(user["userId"], user["userInfo"]);
@@ -203,8 +194,8 @@ class PusherChannelsFlutter {
         channels[channelName]?.onMemberRemoved?.call(member);
         return Future.value(null);
       case 'onAuthorizer':
-        return await onAuthorizer?.call(channelName!,
-            call.arguments['socketId'], call.arguments['options']);
+        return await onAuthorizer?.call(
+            channelName!, call.arguments['socketId'], call.arguments['options']);
       default:
         throw MissingPluginException('Unknown method ${call.method}');
     }
@@ -238,18 +229,13 @@ class PusherChannelsFlutter {
 
   Future<void> unsubscribe({required String channelName}) async {
     channels.remove(channelName);
-    await methodChannel
-        .invokeMethod("unsubscribe", {"channelName": channelName});
+    await methodChannel.invokeMethod("unsubscribe", {"channelName": channelName});
   }
 
   Future<void> trigger(PusherEvent event) async {
-    if (event.channelName.startsWith("private-") ||
-        event.channelName.startsWith("presence-")) {
-      await methodChannel.invokeMethod('trigger', {
-        "channelName": event.channelName,
-        "eventName": event.eventName,
-        "data": event.data
-      });
+    if (event.channelName.startsWith("private-") || event.channelName.startsWith("presence-")) {
+      await methodChannel.invokeMethod('trigger',
+          {"channelName": event.channelName, "eventName": event.eventName, "data": event.data});
     } else {
       throw ('Trigger event is only for private/presence channels');
     }
